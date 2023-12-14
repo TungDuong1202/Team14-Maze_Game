@@ -1,0 +1,69 @@
+import pygame
+import random
+
+# Kích thước cửa sổ
+WIDTH, HEIGHT = 600, 600
+
+# Kích thước lưới
+ROWS, COLS = 15, 15
+CELL_SIZE = WIDTH // COLS
+
+# Mã số các loại ô trong mê cung
+EMPTY = 0
+WALL = 1
+
+# Màu sắc
+WHITE = (255, 255, 255)
+BLACK = (0, 0, 0)
+
+# Tạo mê cung bằng thuật toán Recursive Backtracking
+def recursive_backtracking(maze, x, y):
+    directions = [(0, -2), (0, 2), (-2, 0), (2, 0)]
+    random.shuffle(directions)
+
+    for dx, dy in directions:
+        new_x, new_y = x + dx, y + dy
+        if 0 <= new_x < COLS and 0 <= new_y < ROWS and maze[new_y][new_x] == WALL:
+            maze[y + dy // 2][x + dx // 2] = EMPTY
+            maze[new_y][new_x] = EMPTY
+            recursive_backtracking(maze, new_x, new_y)
+
+# Tạo mê cung
+def create_maze():
+    maze = [[WALL for _ in range(COLS)] for _ in range(ROWS)]
+    maze[0][0] = EMPTY
+    recursive_backtracking(maze, 0, 0)
+    return maze
+
+# Vẽ mê cung lên cửa sổ
+def draw_maze(screen, maze):
+    for row in range(ROWS):
+        for col in range(COLS):
+            color = WHITE if maze[row][col] == EMPTY else BLACK
+            pygame.draw.rect(screen, color, (col * CELL_SIZE, row * CELL_SIZE, CELL_SIZE, CELL_SIZE))
+
+# Hàm chính của trò chơi
+def main():
+    pygame.init()
+    screen = pygame.display.set_mode((WIDTH, HEIGHT))
+    pygame.display.set_caption('Maze with Multiple Paths')
+    clock = pygame.time.Clock()
+
+    maze = create_maze()
+
+    running = True
+    while running:
+        for event in pygame.event.get():
+            if event.type == pygame.QUIT:
+                running = False
+
+        screen.fill(BLACK)
+        draw_maze(screen, maze)
+
+        pygame.display.update()
+        clock.tick(60)
+
+    pygame.quit()
+
+if __name__ == "__main__":
+    main()
