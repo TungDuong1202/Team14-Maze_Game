@@ -41,46 +41,50 @@ def draw_maze(screen, maze):
 
 # Hàm kiểm tra xem một điểm có hợp lệ để di chuyển không
 def is_valid_move(x, y,maze):
-    return 0 <= x < COLS and 0 <= y < ROWS and maze[y][x] == 0
+    return 0 <= x < COLS and 0 <= y < ROWS and maze[y][x] == EMPTY
 
 # Tìm đường đi từ start đến end bằng BFS
 def BFS(start, end, maze):
     visited = [[False for _ in range(COLS)] for _ in range(ROWS)]
     queue = deque([(start, [])])
+    cell_count = 0
 
     while queue:
         current, path = queue.popleft()
         x, y = current
 
         if current == end:
-            return path + [current]  # Trả về đường đi từ start đến end
+            return cell_count,path + [current] 
 
         if is_valid_move(x, y,maze) and not visited[x][y]:
             visited[x][y] = True
+            cell_count += 1
             for dx, dy in [(0, -1), (1, 0), (0, 1), (-1, 0)]:
                 new_x, new_y = x + dx, y + dy
                 queue.append(((new_x, new_y), path + [current]))
 
-    return None
+    return cell_count,None
 # Hàm tìm đường đi từ start đến end bằng DFS
 def DFS(start, end, maze):
     visited = [[False for _ in range(COLS)] for _ in range(ROWS)]
     stack = [(start, [])]
+    cell_count = 0
 
     while stack:
         current, path = stack.pop()
         x, y = current
 
         if current == end:
-            return path + [current]  # Trả về đường đi từ start đến end
+            return cell_count,path + [current]  
 
         if is_valid_move(x, y, maze) and not visited[x][y]:
             visited[x][y] = True
+            cell_count += 1
             for dx, dy in [(0, -1), (1, 0), (0, 1), (-1, 0)]:
                 new_x, new_y = x + dx, y + dy
                 stack.append(((new_x, new_y), path + [current]))
 
-    return None
+    return cell_count,None
 # check va cham
 def is_wall(x,y,maze):
     return maze[y][x] != WALL
@@ -94,7 +98,7 @@ def main():
 
     maze = read_maze_from_file('maze2.txt')
     start = (0,0)
-    end = choose_end(maze,start)
+    end = (28,28)
     draw_path_BFS = False
     draw_path_DFS = False
     running = True
@@ -129,24 +133,20 @@ def main():
         pygame.draw.rect(screen, GREEN, (start_x * CELL_SIZE, start_y * CELL_SIZE, CELL_SIZE, CELL_SIZE))
         pygame.draw.rect(screen, RED, (end_x * CELL_SIZE, end_y * CELL_SIZE, CELL_SIZE, CELL_SIZE))
         if draw_path_BFS:
-            path_BFS = BFS(start,end,maze)
+            count_BFS,path_BFS = BFS(start,end,maze)
             if path_BFS:
                 for x,y in path_BFS:
                     if (x,y) != start and (x,y) != end:
                         pygame.draw.rect(screen,(0,0,225),(x*CELL_SIZE,y*CELL_SIZE,CELL_SIZE,CELL_SIZE))
-                # Tính độ dài đường đi BFS và hiển thị lên cửa sổ
-                length_BFS = len(path_BFS)
-                text_surface_BFS = font.render(f'BFS Path Length: {length_BFS}', True,RED)
+                text_surface_BFS = font.render(f'BFS : {count_BFS}', True,RED)
                 screen.blit(text_surface_BFS, (450, 10))  # Hiển thị văn bản
         if draw_path_DFS:
-            path_DFS = DFS(start,end,maze)
+            count_DFS,path_DFS = DFS(start,end,maze)
             if path_DFS:
                 for x,y in path_DFS:
                     if (x,y) != start and (x,y) != end:
                         pygame.draw.rect(screen,(225,165,0),(x*CELL_SIZE,y*CELL_SIZE,CELL_SIZE,CELL_SIZE))
-                # Tính độ dài đường đi DFS và hiển thị lên cửa sổ
-                length_DFS = len(path_DFS)
-                text_surface_DFS = font.render(f'DFS Path Length: {length_DFS}', True, RED)
+                text_surface_DFS = font.render(f'DFS : {count_DFS}', True, RED)
                 screen.blit(text_surface_DFS, (450, 50))  # Hiển thị văn bản
         if start == end:
             end = choose_end(maze,start)
